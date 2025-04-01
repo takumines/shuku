@@ -3,11 +3,13 @@ description:
 globs: 
 alwaysApply: true
 ---
- # 実装ガイドライン
+# 実装ガイドライン
 
 ## 概要
 このドキュメントは、shukuプロジェクトの実装に関するガイドラインを定義します。
-コードの品質、保守性、パフォーマンスを確保するための指針を示します。
+コードの品質、保守性、パフォーマンスを確保するための具体的な実装手法を示します。
+高レベルの設計原則は[design-principles.mdc](mdc:design-principles.mdc)を、
+パッケージ構造は[package-structure.mdc](mdc:package-structure.mdc)を参照してください。
 
 ## コード品質
 
@@ -16,10 +18,30 @@ alwaysApply: true
 - `gofmt`を使用してコードをフォーマットする
 - 適切なインデントと空行を使用する
 - 一貫した命名規則に従う
+  ```go
+  // 良い例
+  func CompressImage(img image.Image, quality int) (image.Image, error)
+  
+  // 避けるべき例
+  func compress_img(i image.Image, q int) (image.Image, error)
+  ```
 
 ### 2. ドキュメント
 - パッケージレベルのドキュメントを必ず含める
+  ```go
+  // Package compressor は画像圧縮のためのアルゴリズムを提供します。
+  // 様々な画像形式に対応し、量子化や最適化を適用することで
+  // ファイルサイズを削減します。
+  package compressor
+  ```
 - エクスポートされた型と関数にはドキュメントコメントを付ける
+  ```go
+  // PNGCompressor はPNG形式の画像を圧縮するための実装です。
+  // 色数削減とZlib圧縮の調整を行います。
+  type PNGCompressor struct {
+      // フィールド定義
+  }
+  ```
 - 複雑なロジックには適切なコメントを付ける
 - 変更履歴を明確に記録する
 
@@ -27,38 +49,177 @@ alwaysApply: true
 - エラーは適切に処理し、上位に伝播させる
 - エラーメッセージは具体的で有用な情報を含める
 - エラー型は適切に定義し、カスタムエラーを活用する
+  ```go
+  type CompressError struct {
+      OriginalErr error
+      InputSize   int
+      Format      string
+  }
+  
+  func (e *CompressError) Error() string {
+      return fmt.Sprintf("圧縮エラー(%s): %v", e.Format, e.OriginalErr)
+  }
+  
+  func ProcessImage(img image.Image) (image.Image, error) {
+      result, err := quantizeColors(img)
+      if err != nil {
+          return nil, &CompressError{
+              OriginalErr: err,
+              InputSize: len(img.Bounds().Size()),
+              Format: "PNG",
+          }
+      }
+      return result, nil
+  }
+  ```
 - パニックは適切な場合のみ使用する
 
-## インターフェース設計
+## 関数設計
 
-### 1. インターフェースの定義
-- インターフェースは使用する側のパッケージで定義する
-- インターフェースは必要最小限のメソッドのみを含める
-- インターフェース名は「er」で終わる（例：`Compressor`）
+### 1. 純粋関数の原則
+- 同じ入力に対して常に同じ出力を返す設計
+- グローバル状態への依存を避ける
+- 副作用を最小限に抑え、明示的に
+  ```go
+  // 良い例（純粋関数）
+  func QuantizeColors(img image.Image, numColors int) (image.Image, error) {
+    // 入力のみに基づいて処理を行う
+    return processedImage, nil
+  }
+  
+  // 避けるべき例（副作用あり）
+  func QuantizeColors(img image.Image, numColors int) image.Image {
+    globalColorPalette = calculatePalette(img) // グローバル変数を変更
+    return processImage(img)
+  }
+  ```
+
+### 2. インターフェースの実装
+- インターフェースを実装する型は、そのインターフェースが求める全てのメソッドを実装
+  ```go
+  // Compressor は画像圧縮の共通インターフェースを定義します
+  type Compressor interface {
+      Compress(img image.Image, options Options) (image.Image, error)
+      SupportedFormat() string
+  }
+  
+  // PNGCompressor はCompressorインターフェースを実装します
+  type PNGCompressor struct {
+      // フィールド
+  }
+  
+  func (p *PNGCompressor) Compress(img image.Image, options Options) (image.Image, error) {
+      // PNG圧縮の実装
+      return compressedImg, nil
+  }
+  
+  func (p *PNGCompressor) SupportedFormat() string {
+      return "png"
+  }
+  ```
 - インターフェースは小さく保つ
-
-### 2. 実装の配置
-- 実装は`internal`パッケージに配置する
-- パブリックAPIは`pkg`パッケージに配置する
-- テスト可能な設計を心がける
-- 依存性注入を活用する
+- 依存性注入を活用してテスト容易性を高める
 
 ## パフォーマンス最適化
 
 ### 1. 並行処理
 - 並行処理が必要な場合は`worker`パッケージを利用する
 - ゴルーチンのリークを防ぐ
+  ```go
+  func ProcessImages(images []image.Image) []image.Image {
+      results := make([]image.Image, len(images))
+      var wg sync.WaitGroup
+      
+      for i, img := range images {
+          wg.Add(1)
+          go func(index int, image image.Image) {
+              defer wg.Done()
+              results[index] = processImage(image)
+          }(i, img)
+      }
+      
+      wg.Wait()
+      return results
+  }
+  ```
 - 適切な同期メカニズムを使用する
 - コンテキストを使用してキャンセルを制御する
+  ```go
+  func ProcessImagesWithContext(ctx context.Context, images []image.Image) ([]image.Image, error) {
+      results := make([]image.Image, len(images))
+      errCh := make(chan error, 1)
+      
+      for i, img := range images {
+          select {
+          case <-ctx.Done():
+              return nil, ctx.Err()
+          default:
+              // 処理続行
+          }
+          
+          // 画像処理
+      }
+      
+      select {
+      case err := <-errCh:
+          return nil, err
+      default:
+          return results, nil
+      }
+  }
+  ```
 
 ### 2. メモリ管理
 - メモリ使用量を考慮する
 - 適切なバッファサイズを選択する
+  ```go
+  // 良い例：サイズが分かっている場合はキャパシティを事前に設定
+  palette := make([]color.Color, 0, numColors)
+  
+  // 避けるべき例：不要なメモリ割り当て
+  for i := 0; i < len(largeSlice); i++ {
+      // 毎回新しいスライスを作成
+      temp := append([]byte{}, largeSlice[i:]...)
+      process(temp)
+  }
+  ```
 - 不要なメモリ割り当てを避ける
 - メモリプールを活用する
+  ```go
+  var bufferPool = sync.Pool{
+      New: func() interface{} {
+          return new(bytes.Buffer)
+      },
+  }
+  
+  func processData(data []byte) []byte {
+      buffer := bufferPool.Get().(*bytes.Buffer)
+      defer bufferPool.Put(buffer)
+      
+      buffer.Reset()
+      buffer.Write(data)
+      // 処理実行
+      return buffer.Bytes()
+  }
+  ```
 
 ### 3. ベンチマーク
 - パフォーマンスクリティカルな部分にはベンチマークを追加する
+  ```go
+  func BenchmarkPNGCompress(b *testing.B) {
+      img := loadTestImage("testdata/sample.png")
+      compressor := NewPNGCompressor()
+      opts := DefaultOptions()
+      
+      b.ResetTimer()
+      for i := 0; i < b.N; i++ {
+          _, err := compressor.Compress(img, opts)
+          if err != nil {
+              b.Fatal(err)
+          }
+      }
+  }
+  ```
 - 定期的にベンチマークを実行する
 - パフォーマンスの劣化を監視する
 - 最適化の効果を測定する
@@ -73,9 +234,52 @@ alwaysApply: true
 
 ### 2. テストの種類
 - ユニットテスト
+  ```go
+  func TestQuantizeColors(t *testing.T) {
+      img := loadTestImage()
+      result, err := QuantizeColors(img, 16)
+      assert.NoError(t, err)
+      assert.Equal(t, 16, countUniqueColors(result))
+  }
+  ```
 - 統合テスト
 - ベンチマーク
 - テーブル駆動テスト
+  ```go
+  func TestCompressWithDifferentQualities(t *testing.T) {
+      img := loadTestImage()
+      compressor := NewJPEGCompressor()
+      
+      tests := []struct{
+          name       string
+          quality    int
+          expectSize int
+          expectErr  bool
+      }{
+          {"高品質", 90, 100000, false},
+          {"中品質", 50, 50000, false},
+          {"低品質", 10, 10000, false},
+          {"無効品質", -10, 0, true},
+      }
+      
+      for _, tc := range tests {
+          t.Run(tc.name, func(t *testing.T) {
+              opts := DefaultOptions()
+              opts.Quality = tc.quality
+              
+              result, err := compressor.Compress(img, opts)
+              
+              if tc.expectErr {
+                  assert.Error(t, err)
+                  return
+              }
+              
+              assert.NoError(t, err)
+              assert.Less(t, len(result.Bytes()), tc.expectSize)
+          })
+      }
+  }
+  ```
 
 ### 3. テストの配置
 - テストは同じパッケージ内に配置する
@@ -102,3 +306,16 @@ alwaysApply: true
 - セキュリティアップデートを優先する
 - 不要な依存関係を削除する
 - バージョンの互換性を確認する
+
+## コードレビューチェックリスト
+
+コードレビュー時は以下の点を確認してください：
+
+- [ ] コードはフォーマット済みか（gofmt）
+- [ ] 適切なエラーハンドリングがあるか
+- [ ] メモリ使用量は最適化されているか
+- [ ] 並行処理は適切に同期されているか
+- [ ] テストは追加されているか
+- [ ] ドキュメントは更新されているか
+- [ ] 命名は一貫しているか
+- [ ] 不要なコードは含まれていないか
