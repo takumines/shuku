@@ -1,8 +1,9 @@
 package version
 
 import (
-	"github.com/urfave/cli/v2"
 	"log"
+
+	"github.com/urfave/cli/v2"
 )
 
 // Cmd returns the version command.
