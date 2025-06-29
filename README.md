@@ -23,7 +23,40 @@ go install github.com/takumines/shuku/cmd/shuku@latest
 
 ## 使用方法
 
-WIP...
+### 基本的な使用方法
+
+```bash
+# JPEG画像を圧縮
+shuku compress -i input.jpg -o output.jpg
+
+# 品質を指定して圧縮（0-100、デフォルト: 80）
+shuku compress -i input.jpg -o output.jpg --quality 50
+
+# 詳細情報を表示
+shuku compress -i input.jpg -o output.jpg -v
+```
+
+## 開発進捗
+
+### ✅ 完了済み機能
+- JPEG圧縮機能（品質制御付き）
+- PNG圧縮エンジン（内部実装完了）
+- CLI基盤（urfave/cli/v2）
+- 公開API（ライブラリとしての使用）
+- テスト環境とテストデータ
+- 開発ガイドライン（CLAUDE.md）
+
+### 🚧 進行中・TODO
+- [ ] PNG圧縮サポートをCLIに追加（高優先度）
+- [ ] WebP圧縮機能を実装（中優先度）
+- [ ] エラーメッセージを英語化（中優先度）
+- [ ] 複数ファイルの一括圧縮機能を追加（低優先度）
+- [ ] 使用方法ドキュメントの詳細化（低優先度）
+
+### 📝 技術メモ
+- 現在JPEGのみCLI対応、PNGは内部実装済みだがCLI制限中
+- デュアルユース設計（CLI + ライブラリ）
+- インターフェースベースアーキテクチャで拡張性確保
 
 ## 開発
 
