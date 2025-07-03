@@ -37,7 +37,7 @@ func TestCompressAction_JPEG(t *testing.T) {
 	os.Remove(outputFile)
 }
 
-// TestCompressAction_PNG tests PNG compression (should fail initially - this is our RED test)
+// TestCompressAction_PNG tests PNG compression (now should succeed - GREEN phase)
 func TestCompressAction_PNG(t *testing.T) {
 	app := &cli.App{
 		Commands: []*cli.Command{
@@ -49,22 +49,19 @@ func TestCompressAction_PNG(t *testing.T) {
 	outputFile := "../../../test_output.png"
 	os.Remove(outputFile)
 
-	// Test PNG compression - this should FAIL initially (RED phase)
+	// Test PNG compression - this should succeed in GREEN phase
 	args := []string{"app", "compress", "--input", "../../../testdata/test_image.png", "--output", outputFile}
 	err := app.Run(args)
-	
-	// In RED phase, we expect this to fail
-	if err == nil {
-		t.Fatal("Expected PNG compression to fail, but it succeeded")
-	}
-	
-	// Verify it fails with an error message
-	if err != nil && err.Error() != "" {
-		// For now, just verify it fails - we'll check the exact error message later
-		t.Logf("PNG compression failed as expected: %v", err)
+	if err != nil {
+		t.Fatalf("PNG compression failed: %v", err)
 	}
 
-	// Clean up (in case file was somehow created)
+	// Verify output file was created
+	if _, err := os.Stat(outputFile); os.IsNotExist(err) {
+		t.Fatalf("Output file was not created: %s", outputFile)
+	}
+
+	// Clean up
 	os.Remove(outputFile)
 }
 
@@ -76,13 +73,23 @@ func TestCompressAction_UnsupportedFormat(t *testing.T) {
 		},
 	}
 
-	// Test with a non-existent file extension
-	args := []string{"app", "compress", "--input", "testdata/fake.webp", "--output", "output.webp"}
-	err := app.Run(args)
+	// Test with unsupported format by creating a dummy .webp file
+	dummyWebpFile := "../../../testdata/dummy.webp"
+	// Create a dummy file with .webp extension
+	err := os.WriteFile(dummyWebpFile, []byte("dummy content"), 0644)
+	if err != nil {
+		t.Fatalf("Failed to create dummy file: %v", err)
+	}
+	defer os.Remove(dummyWebpFile)
 	
+	args := []string{"app", "compress", "--input", dummyWebpFile, "--output", "output.webp"}
+	err = app.Run(args)
+	
+	// WebPは未対応なので、エラーが発生することが期待される動作
 	if err == nil {
 		t.Fatal("Expected unsupported format to fail, but it succeeded")
 	}
 	
+	// エラーが発生したので、テストは成功
 	t.Logf("Unsupported format failed as expected: %v", err)
 }

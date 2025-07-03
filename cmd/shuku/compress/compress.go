@@ -84,8 +84,8 @@ func compressAction(c *cli.Context) error {
 
 	// ファイル拡張子から形式を判断
 	ext := strings.ToLower(filepath.Ext(inputPath))
-	if ext != ".jpg" && ext != ".jpeg" {
-		return cli.Exit(fmt.Sprintf("サポートされていない画像形式です: %s。現在はJPEG形式のみ対応しています。", ext), 1)
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+		return cli.Exit(fmt.Sprintf("サポートされていない画像形式です: %s。現在はJPEG、PNG形式に対応しています。", ext), 1)
 	}
 
 	fmt.Println("画像を圧縮しています...")
