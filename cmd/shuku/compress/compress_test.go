@@ -71,6 +71,9 @@ func TestCompressAction_UnsupportedFormat(t *testing.T) {
 		Commands: []*cli.Command{
 			compress.Cmd(),
 		},
+		ExitErrHandler: func(c *cli.Context, err error) {
+			// テスト中はexit処理をスキップ
+		},
 	}
 
 	// Test with unsupported format by creating a dummy .webp file
@@ -85,11 +88,18 @@ func TestCompressAction_UnsupportedFormat(t *testing.T) {
 	args := []string{"app", "compress", "--input", dummyWebpFile, "--output", "output.webp"}
 	err = app.Run(args)
 	
-	// WebPは未対応なので、エラーが発生することが期待される動作
+	// WebPは未対応なので、特定のエラーメッセージが発生することが期待される動作
 	if err == nil {
 		t.Fatal("Expected unsupported format to fail, but it succeeded")
 	}
 	
-	// エラーが発生したので、テストは成功
-	t.Logf("Unsupported format failed as expected: %v", err)
+	// 期待するエラーメッセージ
+	expectedErrorMsg := "サポートされていない画像形式です: .webp。現在はJPEG、PNG形式に対応しています。"
+	
+	// エラーメッセージが期待通りかどうかを確認
+	if err.Error() != expectedErrorMsg {
+		t.Errorf("Expected error message '%s', but got '%s'", expectedErrorMsg, err.Error())
+	}
+	
+	t.Logf("Unsupported format failed with correct error message: %v", err)
 }
