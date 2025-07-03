@@ -160,4 +160,3 @@ func TestUnsupportedFormatIntegration(t *testing.T) {
 
 	t.Logf("Unsupported format integration test completed successfully")
 }
-
