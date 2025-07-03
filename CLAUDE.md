@@ -1,6 +1,7 @@
 # CLAUDE.md
 
 このファイルは、Claude Code (claude.ai/code) がこのリポジトリで作業する際のガイダンスを提供します。
+ファイルの末尾には必ず改行を入れてください。
 
 ## Claude Codeの動作設定
 
