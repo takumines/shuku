@@ -79,27 +79,27 @@ func TestCompressAction_UnsupportedFormat(t *testing.T) {
 	// Test with unsupported format by creating a dummy .webp file
 	dummyWebpFile := "../../../testdata/dummy.webp"
 	// Create a dummy file with .webp extension
-	err := os.WriteFile(dummyWebpFile, []byte("dummy content"), 0644)
+	err := os.WriteFile(dummyWebpFile, []byte("dummy content"), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to create dummy file: %v", err)
 	}
 	defer os.Remove(dummyWebpFile)
-	
+
 	args := []string{"app", "compress", "--input", dummyWebpFile, "--output", "output.webp"}
 	err = app.Run(args)
-	
+
 	// WebPは未対応なので、特定のエラーメッセージが発生することが期待される動作
 	if err == nil {
 		t.Fatal("Expected unsupported format to fail, but it succeeded")
 	}
-	
+
 	// 期待するエラーメッセージ
 	expectedErrorMsg := "サポートされていない画像形式です: .webp。現在はJPEG、PNG形式に対応しています。"
-	
+
 	// エラーメッセージが期待通りかどうかを確認
 	if err.Error() != expectedErrorMsg {
 		t.Errorf("Expected error message '%s', but got '%s'", expectedErrorMsg, err.Error())
 	}
-	
+
 	t.Logf("Unsupported format failed with correct error message: %v", err)
 }
