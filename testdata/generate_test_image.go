@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"image/draw"
 	"image/jpeg"
+	"image/png"
 	"log"
 	"os"
 )
@@ -27,17 +28,29 @@ func main() {
 	draw.Draw(img, rect, &image.Uniform{red}, image.Point{}, draw.Src)
 
 	// 画像をJPEGファイルとして保存
-	outFile, err := os.Create("testdata/test_image.jpg")
+	jpegFile, err := os.Create("testdata/test_image.jpg")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer outFile.Close()
+	defer jpegFile.Close()
 
 	// 高品質の画像として保存（圧縮テスト用にあえて高品質に）
-	err = jpeg.Encode(outFile, img, &jpeg.Options{Quality: 90})
+	err = jpeg.Encode(jpegFile, img, &jpeg.Options{Quality: 90})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("テスト画像が生成されました: testdata/test_image.jpg")
+	// 画像をPNGファイルとしても保存
+	pngFile, err := os.Create("testdata/test_image.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer pngFile.Close()
+
+	err = png.Encode(pngFile, img)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("テスト画像が生成されました: testdata/test_image.jpg, testdata/test_image.png")
 }

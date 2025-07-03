@@ -11,6 +11,44 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// サポートされている画像形式のリスト
+var supportedFormats = []string{
+	".jpg",
+	".jpeg",
+	".png",
+}
+
+// サポートされている形式名（エラーメッセージ用）
+var supportedFormatNames = []string{
+	"JPEG",
+	"PNG",
+}
+
+// isFormatSupported は指定された拡張子がサポートされているかどうかを判定します
+func isFormatSupported(ext string) bool {
+	ext = strings.ToLower(ext)
+	for _, format := range supportedFormats {
+		if ext == format {
+			return true
+		}
+	}
+	return false
+}
+
+// validateImageFormat は画像形式を検証し、サポートされていない場合はエラーを返します
+func validateImageFormat(inputPath string) error {
+	ext := filepath.Ext(inputPath)
+	if !isFormatSupported(ext) {
+		return fmt.Errorf("サポートされていない画像形式です: %s。現在は%sに対応しています。", ext, getSupportedFormatsMessage())
+	}
+	return nil
+}
+
+// getSupportedFormatsMessage はサポートされている形式のメッセージを生成します
+func getSupportedFormatsMessage() string {
+	return strings.Join(supportedFormatNames, "、") + "形式"
+}
+
 // Cmd returns the compress command.
 func Cmd() *cli.Command {
 	return &cli.Command{
@@ -83,9 +121,8 @@ func compressAction(c *cli.Context) error {
 	}
 
 	// ファイル拡張子から形式を判断
-	ext := strings.ToLower(filepath.Ext(inputPath))
-	if ext != ".jpg" && ext != ".jpeg" {
-		return cli.Exit(fmt.Sprintf("サポートされていない画像形式です: %s。現在はJPEG形式のみ対応しています。", ext), 1)
+	if err := validateImageFormat(inputPath); err != nil {
+		return cli.Exit(err.Error(), 1)
 	}
 
 	fmt.Println("画像を圧縮しています...")

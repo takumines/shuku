@@ -20,6 +20,10 @@ func init() {
 	jpegCompressor := compressor.NewJPEGCompressor()
 	compressors[jpegCompressor.SupportedFormat()] = jpegCompressor
 	compressors["jpg"] = jpegCompressor // jpgも同じコンプレッサーで対応
+
+	// PNGコンプレッサーを登録
+	pngCompressor := compressor.NewPNGCompressor()
+	compressors[pngCompressor.SupportedFormat()] = pngCompressor
 }
 
 // Compress はバイトスライスとして提供された画像データを圧縮します。
