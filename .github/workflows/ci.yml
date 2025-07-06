@@ -8,7 +8,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        go-version: ['1.22', '1.23', '1.24']
+        os: [ubuntu-latest, macos-latest, windows-latest]
     
     steps:
     - uses: actions/checkout@v4
@@ -16,7 +20,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.22'
+        go-version: ${{ matrix.go-version }}
     
     - name: Check formatting
       run: |
@@ -43,9 +47,15 @@ jobs:
       run: go test -v ./...
     
     - name: Build CLI
-      run: go build -o shuku ./cmd/shuku
+      run: go build -o shuku${{ matrix.os == 'windows-latest' && '.exe' || '' }} ./cmd/shuku
     
     - name: Test CLI functionality
+      shell: bash
       run: |
-        ./shuku help || true
-        ./shuku compress --help
+        if [ "${{ matrix.os }}" == "windows-latest" ]; then
+          ./shuku.exe help || true
+          ./shuku.exe compress --help
+        else
+          ./shuku help || true
+          ./shuku compress --help
+        fi
