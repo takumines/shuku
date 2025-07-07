@@ -87,6 +87,9 @@ jobs:
       shell: bash
       run: |
         go mod tidy
+        # Windows環境でのgofmt正規化による変更をリセット
+        git checkout .
+        go mod tidy
         if [ -n "$(git status --porcelain)" ]; then
           echo "go mod tidy made changes. Please run 'go mod tidy' and commit the changes."
           git diff
