@@ -6,6 +6,11 @@ fmt:
 
 # フォーマットチェック（CI用）
 check-fmt:
+	@# Windows環境では先にフォーマットを実行して行末文字を正規化
+	@if command -v cmd >/dev/null 2>&1; then \
+		echo "Windows環境を検出：フォーマットを正規化しています..."; \
+		gofmt -w .; \
+	fi
 	@if [ $$(gofmt -l . | wc -l) -gt 0 ]; then \
 		echo "The following files are not formatted correctly:"; \
 		gofmt -l .; \
