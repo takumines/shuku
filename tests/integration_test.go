@@ -19,8 +19,12 @@ func TestPNGCompressionIntegration(t *testing.T) {
 	// 出力ファイルパス
 	outputFile := filepath.Join(tempDir, "compressed_output.png")
 
-	// CLIバイナリをビルド
-	binaryPath := filepath.Join(tempDir, "shuku")
+	// CLIバイナリをビルド（Windows対応）
+	binaryName := "shuku"
+	if os.Getenv("GOOS") == "windows" || strings.Contains(strings.ToLower(os.Getenv("OS")), "windows") {
+		binaryName = "shuku.exe"
+	}
+	binaryPath := filepath.Join(tempDir, binaryName)
 	buildCmd := exec.Command("go", "build", "-o", binaryPath, "./cmd/shuku")
 	buildCmd.Dir = ".."
 	buildOutput, err := buildCmd.CombinedOutput()
@@ -85,8 +89,12 @@ func TestJPEGCompressionIntegration(t *testing.T) {
 	// 出力ファイルパス
 	outputFile := filepath.Join(tempDir, "compressed_output.jpg")
 
-	// CLIバイナリをビルド
-	binaryPath := filepath.Join(tempDir, "shuku")
+	// CLIバイナリをビルド（Windows対応）
+	binaryName := "shuku"
+	if os.Getenv("GOOS") == "windows" || strings.Contains(strings.ToLower(os.Getenv("OS")), "windows") {
+		binaryName = "shuku.exe"
+	}
+	binaryPath := filepath.Join(tempDir, binaryName)
 	buildCmd := exec.Command("go", "build", "-o", binaryPath, "./cmd/shuku")
 	buildCmd.Dir = ".."
 	buildOutput, err := buildCmd.CombinedOutput()
@@ -133,8 +141,12 @@ func TestUnsupportedFormatIntegration(t *testing.T) {
 	// 出力ファイルパス
 	outputFile := filepath.Join(tempDir, "output.webp")
 
-	// CLIバイナリをビルド
-	binaryPath := filepath.Join(tempDir, "shuku")
+	// CLIバイナリをビルド（Windows対応）
+	binaryName := "shuku"
+	if os.Getenv("GOOS") == "windows" || strings.Contains(strings.ToLower(os.Getenv("OS")), "windows") {
+		binaryName = "shuku.exe"
+	}
+	binaryPath := filepath.Join(tempDir, binaryName)
 	buildCmd := exec.Command("go", "build", "-o", binaryPath, "./cmd/shuku")
 	buildCmd.Dir = ".."
 	buildOutput, err := buildCmd.CombinedOutput()
