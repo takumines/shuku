@@ -1,0 +1,102 @@
+# GoReleaser設定ファイル
+# 詳細: https://goreleaser.com
+
+# プロジェクト設定
+project_name: shuku
+
+# ビルド設定
+builds:
+  - id: shuku
+    main: ./cmd/shuku
+    binary: shuku
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    # Windows用の実行ファイル拡張子
+    hooks:
+      post:
+        - cmd: 'echo "Built {{ .Path }}"'
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X shuku/cmd/shuku/version.Version={{ .Version }}
+      - -X shuku/cmd/shuku/version.Commit={{ .Commit }}
+      - -X shuku/cmd/shuku/version.Date={{ .Date }}
+
+# アーカイブ設定
+archives:
+  - id: shuku
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE*
+      - CHANGELOG*
+
+# チェックサム生成
+checksum:
+  name_template: "checksums.txt"
+
+# リリースノート設定
+release:
+  github:
+    owner: takumines
+    name: shuku
+  name_template: "Release v{{ .Version }}"
+  header: |
+    ## shuku v{{ .Version }}
+    
+    画像圧縮CLIツール「shuku」の新しいリリースです。
+    
+    ### 使用方法
+    ```bash
+    # JPEG圧縮
+    ./shuku compress --input image.jpg --output compressed.jpg --quality 80
+    
+    # PNG圧縮
+    ./shuku compress --input image.png --output compressed.png
+    ```
+
+# スナップショット設定（開発版）
+snapshot:
+  name_template: "{{ .Version }}-{{ .ShortCommit }}"
+
+# 変更ログ設定
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^style:"
+      - "^refactor:"
+      - "^chore:"
+  groups:
+    - title: "🚀 新機能"
+      regexp: "^.*feat.*:"
+      order: 0
+    - title: "🐛 バグ修正"
+      regexp: "^.*fix.*:"
+      order: 1
+    - title: "📝 ドキュメント"
+      regexp: "^.*docs.*:"
+      order: 2
+    - title: "🔧 その他"
+      order: 999
+
+# 無効化する機能
+dockers:
+  - skip_push: true
+nfpms:
+  - maintainer: ""
+publishers:
+  - disable: true
