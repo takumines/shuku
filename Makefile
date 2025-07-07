@@ -29,6 +29,12 @@ tidy:
 # go mod tidyチェック（CI用）
 check-tidy:
 	go mod tidy
+	@# Windows環境では行末文字の変更を除外してチェック
+	@if command -v cmd >/dev/null 2>&1; then \
+		echo "Windows環境：go.modファイルの行末文字変更を正規化しています..."; \
+		git checkout go.mod go.sum 2>/dev/null || true; \
+		go mod tidy; \
+	fi
 	@if [ -n "$$(git status --porcelain go.mod go.sum)" ]; then \
 		echo "go mod tidy made changes. Please run 'make tidy' and commit the changes."; \
 		git diff go.mod go.sum; \
