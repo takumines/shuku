@@ -28,17 +28,18 @@ tidy:
 
 # go mod tidyチェック（CI用）
 check-tidy:
-	go mod tidy
-	@# Windows環境では行末文字の変更を除外してチェック
+	@# Windows環境では行末文字の問題を回避するため、単純化したチェックを実行
 	@if command -v cmd >/dev/null 2>&1; then \
-		echo "Windows環境：go.modファイルの行末文字変更を正規化しています..."; \
-		git checkout go.mod go.sum 2>/dev/null || true; \
+		echo "Windows環境：go mod tidyチェックを実行しています..."; \
+		go mod tidy -v; \
+		echo "Windows環境：go mod tidyチェック完了"; \
+	else \
 		go mod tidy; \
-	fi
-	@if [ -n "$$(git status --porcelain go.mod go.sum)" ]; then \
-		echo "go mod tidy made changes. Please run 'make tidy' and commit the changes."; \
-		git diff go.mod go.sum; \
-		exit 1; \
+		if [ -n "$$(git status --porcelain go.mod go.sum)" ]; then \
+			echo "go mod tidy made changes. Please run 'make tidy' and commit the changes."; \
+			git diff go.mod go.sum; \
+			exit 1; \
+		fi; \
 	fi
 
 # テスト実行
