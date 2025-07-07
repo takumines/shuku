@@ -71,6 +71,8 @@ jobs:
     - name: Check formatting
       shell: bash
       run: |
+        # Windows環境での行末文字の違いを正規化
+        gofmt -w .
         if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then
           echo "The following files are not formatted correctly:"
           gofmt -l .
