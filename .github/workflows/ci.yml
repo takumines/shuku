@@ -22,8 +22,23 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     
-    - name: Run CI checks
-      run: make ci
+    - name: Check formatting
+      run: make check-fmt
+    
+    - name: Run go vet
+      run: make vet
+    
+    - name: Run go mod tidy check
+      run: make check-tidy
+    
+    - name: Run tests
+      run: make test
+    
+    - name: Build CLI
+      run: make build
+    
+    - name: Test CLI functionality
+      run: make test-cli
 
   test-windows:
     runs-on: windows-latest
@@ -39,6 +54,23 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     
-    - name: Run CI checks
+    - name: Check formatting
       shell: bash
-      run: make ci
+      run: make check-fmt
+    
+    - name: Run go vet
+      run: make vet
+    
+    - name: Run go mod tidy check
+      shell: bash
+      run: make check-tidy
+    
+    - name: Run tests
+      run: make test
+    
+    - name: Build CLI
+      run: make build
+    
+    - name: Test CLI functionality
+      shell: bash
+      run: make test-cli
