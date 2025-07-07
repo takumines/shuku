@@ -22,37 +22,8 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     
-    - name: Check formatting
-      run: |
-        if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then
-          echo "The following files are not formatted correctly:"
-          gofmt -l .
-          echo "Please run 'gofmt -w .' to fix formatting issues."
-          exit 1
-        fi
-    
-    - name: Run go vet
-      run: go vet ./...
-    
-    - name: Run go mod tidy check
-      run: |
-        go mod tidy
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "go mod tidy made changes. Please run 'go mod tidy' and commit the changes."
-          git diff
-          exit 1
-        fi
-    
-    - name: Run tests
-      run: go test -v ./...
-    
-    - name: Build CLI
-      run: go build -o shuku ./cmd/shuku
-    
-    - name: Test CLI functionality
-      run: |
-        ./shuku help || true
-        ./shuku compress --help
+    - name: Run CI checks
+      run: make ci
 
   test-windows:
     runs-on: windows-latest
@@ -68,42 +39,6 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     
-    - name: Check formatting
+    - name: Run CI checks
       shell: bash
-      run: |
-        # Windows環境での行末文字の違いを正規化
-        gofmt -w .
-        if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then
-          echo "The following files are not formatted correctly:"
-          gofmt -l .
-          echo "Please run 'gofmt -w .' to fix formatting issues."
-          exit 1
-        fi
-    
-    - name: Run go vet
-      run: go vet ./...
-    
-    - name: Run go mod tidy check
-      shell: bash
-      run: |
-        go mod tidy
-        # Windows環境でのgofmt正規化による変更をリセット
-        git checkout .
-        go mod tidy
-        if [ -n "$(git status --porcelain)" ]; then
-          echo "go mod tidy made changes. Please run 'go mod tidy' and commit the changes."
-          git diff
-          exit 1
-        fi
-    
-    - name: Run tests
-      run: go test -v ./...
-    
-    - name: Build CLI
-      run: go build -o shuku.exe ./cmd/shuku
-    
-    - name: Test CLI functionality
-      shell: bash
-      run: |
-        ./shuku.exe help || true
-        ./shuku.exe compress --help
+      run: make ci
