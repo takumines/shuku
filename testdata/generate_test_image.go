@@ -8,6 +8,8 @@ import (
 	"image/png"
 	"log"
 	"os"
+
+	"github.com/chai2010/webp"
 )
 
 func main() {
@@ -52,5 +54,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("テスト画像が生成されました: testdata/test_image.jpg, testdata/test_image.png")
+	// 画像をWebPファイルとしても保存
+	webpFile, err := os.Create("testdata/test_image.webp")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer webpFile.Close()
+
+	err = webp.Encode(webpFile, img, &webp.Options{Quality: 90})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("テスト画像が生成されました: testdata/test_image.jpg, testdata/test_image.png, testdata/test_image.webp")
 }

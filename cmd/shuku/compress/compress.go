@@ -16,12 +16,14 @@ var supportedFormats = []string{
 	".jpg",
 	".jpeg",
 	".png",
+	".webp",
 }
 
 // サポートされている形式名（エラーメッセージ用）
 var supportedFormatNames = []string{
 	"JPEG",
 	"PNG",
+	"WebP",
 }
 
 // isFormatSupported は指定された拡張子がサポートされているかどうかを判定します

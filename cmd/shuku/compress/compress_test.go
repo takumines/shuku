@@ -65,6 +65,34 @@ func TestCompressAction_PNG(t *testing.T) {
 	os.Remove(outputFile)
 }
 
+// TestCompressAction_WebP tests WebP compression
+func TestCompressAction_WebP(t *testing.T) {
+	app := &cli.App{
+		Commands: []*cli.Command{
+			compress.Cmd(),
+		},
+	}
+
+	// Clean up any existing output file
+	outputFile := "../../../test_output.webp"
+	os.Remove(outputFile)
+
+	// Test WebP compression - this should succeed
+	args := []string{"app", "compress", "--input", "../../../testdata/test_image.webp", "--output", outputFile}
+	err := app.Run(args)
+	if err != nil {
+		t.Fatalf("WebP compression failed: %v", err)
+	}
+
+	// Verify output file was created
+	if _, err := os.Stat(outputFile); os.IsNotExist(err) {
+		t.Fatalf("Output file was not created: %s", outputFile)
+	}
+
+	// Clean up
+	os.Remove(outputFile)
+}
+
 // TestCompressAction_UnsupportedFormat tests unsupported formats
 func TestCompressAction_UnsupportedFormat(t *testing.T) {
 	app := &cli.App{
@@ -76,25 +104,25 @@ func TestCompressAction_UnsupportedFormat(t *testing.T) {
 		},
 	}
 
-	// Test with unsupported format by creating a dummy .webp file
-	dummyWebpFile := "../../../testdata/dummy.webp"
-	// Create a dummy file with .webp extension
-	err := os.WriteFile(dummyWebpFile, []byte("dummy content"), 0o644)
+	// Test with unsupported format by creating a dummy .bmp file
+	dummyBmpFile := "../../../testdata/dummy.bmp"
+	// Create a dummy file with .bmp extension
+	err := os.WriteFile(dummyBmpFile, []byte("dummy content"), 0o644)
 	if err != nil {
 		t.Fatalf("Failed to create dummy file: %v", err)
 	}
-	defer os.Remove(dummyWebpFile)
+	defer os.Remove(dummyBmpFile)
 
-	args := []string{"app", "compress", "--input", dummyWebpFile, "--output", "output.webp"}
+	args := []string{"app", "compress", "--input", dummyBmpFile, "--output", "output.bmp"}
 	err = app.Run(args)
 
-	// WebPは未対応なので、特定のエラーメッセージが発生することが期待される動作
+	// BMPは未対応なので、特定のエラーメッセージが発生することが期待される動作
 	if err == nil {
 		t.Fatal("Expected unsupported format to fail, but it succeeded")
 	}
 
 	// 期待するエラーメッセージ
-	expectedErrorMsg := "サポートされていない画像形式です: .webp。現在はJPEG、PNG形式に対応しています。"
+	expectedErrorMsg := "サポートされていない画像形式です: .bmp。現在はJPEG、PNG、WebP形式に対応しています。"
 
 	// エラーメッセージが期待通りかどうかを確認
 	if err.Error() != expectedErrorMsg {
