@@ -4,6 +4,11 @@
 # プロジェクト設定
 project_name: shuku
 
+# ビルド設定前のhooks
+before:
+  hooks:
+    - go mod tidy
+
 # ビルド設定
 builds:
   - id: shuku
@@ -16,12 +21,12 @@ builds:
     goarch:
       - amd64
       - arm64
-    # Windows用の実行ファイル拡張子
+    # CGO対応のためのクロスコンパイル設定
     hooks:
       post:
         - cmd: 'echo "Built {{ .Path }}"'
     env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
     ldflags:
       - -s -w
       - -X shuku/cmd/shuku/version.Version={{ .Version }}
