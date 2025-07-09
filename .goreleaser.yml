@@ -21,6 +21,10 @@ builds:
     goarch:
       - amd64
       - arm64
+    # Windows ARM64でのCGO問題を回避
+    ignore:
+      - goos: windows
+        goarch: arm64
     # CGO対応のためのクロスコンパイル設定
     hooks:
       post:
