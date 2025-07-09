@@ -24,6 +24,10 @@ func init() {
 	// PNGコンプレッサーを登録
 	pngCompressor := compressor.NewPNGCompressor()
 	compressors[pngCompressor.SupportedFormat()] = pngCompressor
+
+	// WebPコンプレッサーを登録
+	webpCompressor := compressor.NewWebPCompressor()
+	compressors[webpCompressor.SupportedFormat()] = webpCompressor
 }
 
 // Compress はバイトスライスとして提供された画像データを圧縮します。
