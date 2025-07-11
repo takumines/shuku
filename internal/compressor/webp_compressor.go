@@ -5,7 +5,7 @@ import (
 	"image"
 	"io"
 
-	"github.com/chai2010/webp"
+	"github.com/gen2brain/webp"
 )
 
 // WebPCompressor はWebP形式の画像を圧縮するための実装です。
@@ -25,8 +25,8 @@ func (w *WebPCompressor) Compress(img image.Image, options Options) (image.Image
 	var buf bytes.Buffer
 	quality := w.validateQuality(options.Quality)
 
-	err := webp.Encode(&buf, img, &webp.Options{
-		Quality: float32(quality),
+	err := webp.Encode(&buf, img, webp.Options{
+		Quality: quality,
 	})
 	if err != nil {
 		return nil, &CompressError{
@@ -63,8 +63,8 @@ func (w *WebPCompressor) CompressBytes(data []byte, options Options) ([]byte, er
 	var buf bytes.Buffer
 	quality := w.validateQuality(options.Quality)
 
-	err = webp.Encode(&buf, img, &webp.Options{
-		Quality: float32(quality),
+	err = webp.Encode(&buf, img, webp.Options{
+		Quality: quality,
 	})
 	if err != nil {
 		return nil, &CompressError{
@@ -91,8 +91,8 @@ func (w *WebPCompressor) CompressReader(r io.Reader, wr io.Writer, options Optio
 	// 圧縮を適用して結果をライターに書き込む
 	quality := w.validateQuality(options.Quality)
 
-	err = webp.Encode(wr, img, &webp.Options{
-		Quality: float32(quality),
+	err = webp.Encode(wr, img, webp.Options{
+		Quality: quality,
 	})
 	if err != nil {
 		return &CompressError{

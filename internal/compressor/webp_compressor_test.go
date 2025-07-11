@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/chai2010/webp"
+	"github.com/gen2brain/webp"
 )
 
 // createTestWebPImage はテスト用のWebP画像を作成します
@@ -20,7 +20,7 @@ func createTestWebPImage() ([]byte, error) {
 
 	// WebP形式でエンコード
 	var buf bytes.Buffer
-	err := webp.Encode(&buf, img, &webp.Options{Quality: 80})
+	err := webp.Encode(&buf, img, webp.Options{Quality: 80})
 	if err != nil {
 		return nil, err
 	}
