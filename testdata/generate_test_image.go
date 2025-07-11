@@ -9,7 +9,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/chai2010/webp"
+	"github.com/gen2brain/webp"
 )
 
 func main() {
@@ -61,7 +61,7 @@ func main() {
 	}
 	defer webpFile.Close()
 
-	err = webp.Encode(webpFile, img, &webp.Options{Quality: 90})
+	err = webp.Encode(webpFile, img, webp.Options{Quality: 90})
 	if err != nil {
 		log.Fatal(err)
 	}
