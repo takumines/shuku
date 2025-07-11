@@ -46,12 +46,12 @@ check-tidy:
 test:
 	go test -v ./...
 
-# CLI ビルド (CGO設定を明示化)
+# CLI ビルド (Pure Go実装)
 build:
 	@if [ "$$(uname)" = "Windows_NT" ] || [ "$${OS}" = "Windows_NT" ]; then \
-		CGO_ENABLED=1 go build -o shuku.exe ./cmd/shuku; \
+		CGO_ENABLED=0 go build -o shuku.exe ./cmd/shuku; \
 	else \
-		CGO_ENABLED=1 go build -o shuku ./cmd/shuku; \
+		CGO_ENABLED=0 go build -o shuku ./cmd/shuku; \
 	fi
 
 # CLI機能テスト

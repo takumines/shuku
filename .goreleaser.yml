@@ -21,16 +21,12 @@ builds:
     goarch:
       - amd64
       - arm64
-    # Windows ARM64でのCGO問題を回避
-    ignore:
-      - goos: windows
-        goarch: arm64
-    # CGO対応のためのクロスコンパイル設定
+    # Pure Go実装によりCGO不要
     hooks:
       post:
         - cmd: 'echo "Built {{ .Path }}"'
     env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0
     ldflags:
       - -s -w
       - -X shuku/cmd/shuku/version.Version={{ .Version }}

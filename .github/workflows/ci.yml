@@ -34,14 +34,6 @@ jobs:
     - name: Run tests
       run: make test
     
-    - name: Install WebP dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get update && sudo apt-get install -y libwebp-dev
-    
-    - name: Install WebP dependencies (macOS)
-      if: matrix.os == 'macos-latest'
-      run: brew install webp
-    
     - name: Build CLI
       run: make build
     
@@ -80,14 +72,6 @@ jobs:
     - name: Run go mod tidy check
       shell: bash
       run: make check-tidy
-    
-    - name: Install WebP dependencies (Windows)
-      shell: bash
-      run: |
-        # Windows環境ではvcpkgまたはChocolateyでWebPをインストール
-        if command -v choco >/dev/null 2>&1; then
-          choco install libwebp -y || true
-        fi
     
     - name: Run tests
       run: make test
