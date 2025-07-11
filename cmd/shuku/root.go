@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"shuku/cmd/shuku/compress"
-	"shuku/cmd/shuku/version"
+	"github.com/takumines/shuku/cmd/shuku/compress"
+	"github.com/takumines/shuku/cmd/shuku/version"
 
 	"github.com/urfave/cli/v2"
 )

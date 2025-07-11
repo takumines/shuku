@@ -1,4 +1,4 @@
-module shuku
+module github.com/takumines/shuku
 
 go 1.23.0
 

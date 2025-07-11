@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"shuku/cmd/shuku/compress"
+	"github.com/takumines/shuku/cmd/shuku/compress"
 
 	"github.com/urfave/cli/v2"
 )

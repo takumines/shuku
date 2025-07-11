@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"shuku/pkg/shuku"
+	"github.com/takumines/shuku/pkg/shuku"
 
 	"github.com/urfave/cli/v2"
 )
