@@ -169,7 +169,7 @@ package main
 
 import (
     "fmt"
-    "shuku/pkg/shuku"
+    "github.com/takumines/shuku/pkg/shuku"
 )
 
 func main() {

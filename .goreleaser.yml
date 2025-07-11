@@ -29,9 +29,9 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - -s -w
-      - -X shuku/cmd/shuku/version.Version={{ .Version }}
-      - -X shuku/cmd/shuku/version.Commit={{ .Commit }}
-      - -X shuku/cmd/shuku/version.Date={{ .Date }}
+      - -X github.com/takumines/shuku/cmd/shuku/version.Version={{ .Version }}
+      - -X github.com/takumines/shuku/cmd/shuku/version.Commit={{ .Commit }}
+      - -X github.com/takumines/shuku/cmd/shuku/version.Date={{ .Date }}
 
 # アーカイブ設定
 archives:

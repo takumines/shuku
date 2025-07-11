@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"shuku/internal/compressor"
+	"github.com/takumines/shuku/internal/compressor"
 )
 
 // 画像形式に対応するコンプレッサーのマップ
