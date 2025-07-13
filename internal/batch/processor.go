@@ -20,17 +20,17 @@ type Job struct {
 
 // Result はジョブの実行結果を表します。
 type Result struct {
-	Job           Job
-	OriginalSize  int64
+	Job            Job
+	OriginalSize   int64
 	CompressedSize int64
-	Error         error
+	Error          error
 }
 
 // Processor はバッチ処理を管理します。
 type Processor struct {
-	WorkerCount  int    // 並行処理数
-	OutputDir    string // 出力ディレクトリ
-	Recursive    bool   // 再帰的処理フラグ
+	WorkerCount  int      // 並行処理数
+	OutputDir    string   // 出力ディレクトリ
+	Recursive    bool     // 再帰的処理フラグ
 	IncludeGlobs []string // 処理対象ファイルパターン
 	ExcludeGlobs []string // 除外ファイルパターン
 }
@@ -40,7 +40,7 @@ func NewProcessor(workerCount int, outputDir string) *Processor {
 	if workerCount <= 0 {
 		workerCount = 4 // デフォルトワーカー数
 	}
-	
+
 	return &Processor{
 		WorkerCount:  workerCount,
 		OutputDir:    outputDir,
@@ -96,7 +96,7 @@ func (p *Processor) ProcessDirectory(inputDir string, options shuku.Options) ([]
 // collectJobs は処理対象ファイルを収集してJobsを作成します。
 func (p *Processor) collectJobs(inputDir string, options shuku.Options) ([]Job, error) {
 	var jobs []Job
-	
+
 	walkFunc := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -131,7 +131,7 @@ func (p *Processor) collectJobs(inputDir string, options shuku.Options) ([]Job, 
 // shouldIncludeFile はファイルが処理対象かどうかを判定します。
 func (p *Processor) shouldIncludeFile(filePath string) bool {
 	fileName := filepath.Base(filePath)
-	
+
 	// 除外パターンのチェック
 	for _, pattern := range p.ExcludeGlobs {
 		if matched, _ := filepath.Match(pattern, fileName); matched {
@@ -172,7 +172,7 @@ func (p *Processor) generateOutputPath(inputPath, inputDir string) string {
 func (p *Processor) executeJobs(jobs []Job) []Result {
 	jobChan := make(chan Job, len(jobs))
 	resultChan := make(chan Result, len(jobs))
-	
+
 	// ワーカーを起動
 	var wg sync.WaitGroup
 	for i := 0; i < p.WorkerCount; i++ {
@@ -242,9 +242,9 @@ func (p *Processor) processJob(job Job) Result {
 
 // Statistics はバッチ処理の統計情報を表します。
 type Statistics struct {
-	TotalFiles      int
-	SuccessFiles    int
-	FailedFiles     int
+	TotalFiles          int
+	SuccessFiles        int
+	FailedFiles         int
 	TotalOriginalSize   int64
 	TotalCompressedSize int64
 	CompressionRatio    float64

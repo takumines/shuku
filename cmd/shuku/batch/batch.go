@@ -165,9 +165,9 @@ func batchAction(c *cli.Context) error {
 				if result.OriginalSize > 0 {
 					compressionRatio = 100.0 - (float64(result.CompressedSize) / float64(result.OriginalSize) * 100.0)
 				}
-				fmt.Printf("✅ %s → %s (%.2f%% 圧縮)\n", 
-					result.Job.InputPath, 
-					result.Job.OutputPath, 
+				fmt.Printf("✅ %s → %s (%.2f%% 圧縮)\n",
+					result.Job.InputPath,
+					result.Job.OutputPath,
 					compressionRatio)
 			}
 		}
@@ -179,7 +179,7 @@ func batchAction(c *cli.Context) error {
 		fmt.Println("=== 圧縮統計 ===")
 		fmt.Printf("処理ファイル数: %d\n", stats.TotalFiles)
 		fmt.Printf("成功: %d, 失敗: %d\n", stats.SuccessFiles, stats.FailedFiles)
-		
+
 		if stats.SuccessFiles > 0 {
 			fmt.Printf("元のサイズ合計: %s\n", formatFileSize(stats.TotalOriginalSize))
 			fmt.Printf("圧縮後サイズ合計: %s\n", formatFileSize(stats.TotalCompressedSize))
