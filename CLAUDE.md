@@ -79,24 +79,23 @@ go test -vet=all ./...
 ## 現在の実装状況
 
 ### 完了済み機能
-- 品質制御付きJPEG圧縮
-- PNG圧縮（実装済みだがCLIサポートは限定的）
+- 品質制御付きJPEG圧縮（CLI・ライブラリ完全対応）
+- PNG圧縮（CLI・ライブラリ完全対応）
+- WebP圧縮（CLI・ライブラリ完全対応）
 - urfave/cli/v2を使用したCLIインターフェース
 - ライブラリ使用のためのパブリックAPI
 - 圧縮設定用のOptions構造体
+- 画像形式自動検出機能（バイナリシグネチャベース）
 - テストデータ生成ツール
 
 ### 既知の制限事項
-- CLIは現在JPEGファイルのみサポート（`cmd/shuku/compress/compress.go`の87-88行目）
-- PNGコンプレッサーは実装済みだがCLIに統合されていない
-- WebPサポートはまだ実装されていない
-- エラーメッセージが日本語と英語が混在
+- 一部パッケージのテストカバレッジが不足（cmd/shuku: 0%, version: 0%）
 
 ### 新しい画像形式サポートの追加方法
 1. `Compressor`インターフェースを実装する`internal/compressor/<format>_compressor.go`を作成
 2. `pkg/shuku/shuku.go`のinit()関数でコンプレッサーを登録
 3. `detectImageFormat()`関数に形式検出ロジックを追加
-4. `cmd/shuku/compress/compress.go`のCLI検証を更新
+4. `cmd/shuku/compress/compress.go`のsupportedFormats配列に拡張子を追加
 
 ## コードスタイルガイドライン
 
@@ -105,7 +104,7 @@ go test -vet=all ./...
 - エクスポートされた関数と型にはドキュメントコメントが必須
 - 拡張性のためインターフェースベース設計を使用
 - 外部依存関係を最小化（現在はurfave/cli/v2のみ）
-- 一貫性のためエラーメッセージは英語で統一
+- エラーメッセージは日本語で統一済み
 - 包括的カバレッジのためテーブル駆動テストを使用
 
 ## テスト戦略

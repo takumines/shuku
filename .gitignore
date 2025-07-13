@@ -3,8 +3,10 @@ cmd/shuku/shuku
 # ビルドファイル
 shuku
 shuku.exe
+cmd/shuku/shuku_new
 
 # テスト出力ファイル
 test_output.*
 testdata/dummy.*
 testdata/*_compressed.*
+testdata/test_compressed*
