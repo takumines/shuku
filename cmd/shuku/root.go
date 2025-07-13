@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/takumines/shuku/cmd/shuku/batch"
 	"github.com/takumines/shuku/cmd/shuku/compress"
 	"github.com/takumines/shuku/cmd/shuku/version"
 
@@ -31,6 +32,7 @@ func rootCmd() *cli.App {
 		UsageText: "shuku [command] [options] [arguments]",
 		Commands: []*cli.Command{
 			compress.Cmd(),
+			batch.Cmd(),
 			version.Cmd(),
 			helpCommand,
 		},

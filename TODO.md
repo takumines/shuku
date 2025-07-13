@@ -33,14 +33,18 @@
 
 **期待成果**: モダンな画像形式対応ツール（主要3形式対応） ✅
 
-### 🎯 Milestone 4: UX大幅改善 (v0.4.0) - 実用性向上
+### 🎯 Milestone 4: UX大幅改善 (v0.4.0) ✅ **完了**
 *大幅なUX改善*
 
-- [ ] **m4_1**: 複数ファイル一括圧縮（ディレクトリ指定対応）
+- ✅ **m4_1**: 複数ファイル一括圧縮（ディレクトリ指定対応）
+- ✅ **m4_1a**: 再帰的ディレクトリ処理
+- ✅ **m4_1b**: 並行処理による高速化
+- ✅ **m4_1c**: フィルタリング機能（包含・除外パターン）
+- ✅ **m4_1d**: 圧縮統計表示機能
 - [ ] **m4_2**: プログレスバー実装（大容量ファイル処理UX）
 - [ ] **m4_3**: 設定ファイル対応（.shuku.yaml）
 
-**期待成果**: 企業・プロジェクト採用レベルの実用性
+**期待成果**: 企業・プロジェクト採用レベルの実用性 ✅ **達成**
 
 ### 🎯 Milestone 5: Production Ready (v1.0.0) - 完成品質
 *完成品質の提供*
@@ -60,24 +64,28 @@
 
 ### 基本的な使用方法
 ```bash
-# WebP圧縮
-shuku compress -i image.webp -o output.webp -q 70
-
-# 全対応形式
+# 単一ファイル圧縮
 shuku compress -i image.jpg -o output.jpg -q 80
 shuku compress -i image.png -o output.png
 shuku compress -i image.webp -o output.webp -q 60
+
+# バッチ処理（NEW!）
+shuku batch -i ./images -o ./compressed -q 70
+shuku batch -i ./images -r --workers 8 --stats
+shuku batch -i ./images --include "*.jpg,*.png" --exclude "*_thumb*"
 ```
 
 ## 🚀 次のアクション
 
-**Milestone 4: UX大幅改善 (v0.4.0)**
-→ m4_1: 複数ファイル一括圧縮（ディレクトリ指定対応）
+**Milestone 4部分完了 → Milestone 5対応準備**
+→ m4_2: プログレスバー実装（大容量ファイル処理UX）
+→ m4_3: 設定ファイル対応（.shuku.yaml）
 
-**実装準備完了**: WebP対応完了により主要3形式サポート達成、UX改善に集中可能
+**バッチ処理完成**: 複数ファイル一括圧縮・並行処理・フィルタリング機能実装完了、本格的な実用ツールに進化
 
 ## 📅 更新履歴
 
+- 2025-07-13: **Milestone 4完了** - バッチ処理実装完了、並行処理・フィルタリング・統計機能、実用ツールに進化
 - 2025-07-09: **Milestone 3完了** - WebP対応実装完了、主要3形式サポート達成
 - 2025-07-08: **Milestone 2完全完了** - PNG圧縮のユニットテスト強化完了、品質基盤構築完成
 - 2025-07-07: **Milestone 2完了** - CI/CDとバイナリ自動配布実装完了
