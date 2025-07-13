@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go test:*)",
+      "Bash(find:*)",
+      "Bash(go run:*)",
+      "Bash(go build:*)",
+      "Bash(./cmd/shuku/shuku:*)",
+      "Bash(gofmt:*)",
+      "Bash(go vet:*)"
+    ],
+    "deny": []
+  }
+}

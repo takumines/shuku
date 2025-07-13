@@ -17,18 +17,23 @@ Shukuは様々な画像形式（JPEG、PNG、WebP）を圧縮するCLIツール�
 ### パッケージ構造
 ```
 cmd/shuku/          - CLIアプリケーションのエントリーポイントとコマンド
+  ├── compress/     - 単一ファイル圧縮コマンド
+  ├── batch/        - バッチ処理コマンド
+  └── version/      - バージョン表示コマンド
 pkg/shuku/          - パブリックライブラリAPI (CompressFile, Compress, CompressImage)
 internal/compressor/ - 画像圧縮実装 (JPEG, PNG, WebP)
-internal/optimizer/ - 最適化アルゴリズム（計画中）
-internal/worker/    - 並行処理ユーティリティ（計画中）
+internal/batch/     - バッチ処理・並行処理実装
 testdata/          - テスト画像と生成ツール
+tests/             - 統合テスト
 ```
 
 ### 主要コンポーネント
 - `pkg/shuku/shuku.go`: 形式自動検出機能付きのメインパブリックAPI
 - `internal/compressor/interface.go`: 共通`Compressor`インターフェース
 - `internal/compressor/*_compressor.go`: 形式固有の実装
-- `cmd/shuku/compress/compress.go`: CLI圧縮コマンド実装
+- `internal/batch/processor.go`: バッチ処理・並行処理エンジン
+- `cmd/shuku/compress/compress.go`: CLI単一ファイル圧縮コマンド
+- `cmd/shuku/batch/batch.go`: CLIバッチ処理コマンド
 
 ## 開発コマンド
 
@@ -40,8 +45,11 @@ go build -o shuku cmd/shuku/main.go
 # ビルドせずに実行
 go run cmd/shuku/main.go compress -i input.jpg -o output.jpg
 
-# CLI機能をテスト
+# CLI機能をテスト（単一ファイル）
 ./cmd/shuku/shuku compress --input testdata/test_image.jpg --output compressed.jpg
+
+# CLI機能をテスト（バッチ処理）
+./shuku batch -i testdata -o compressed_batch -v --stats
 ```
 
 ### テスト
@@ -79,24 +87,29 @@ go test -vet=all ./...
 ## 現在の実装状況
 
 ### 完了済み機能
-- 品質制御付きJPEG圧縮
-- PNG圧縮（実装済みだがCLIサポートは限定的）
+- 品質制御付きJPEG圧縮（CLI・ライブラリ完全対応）
+- PNG圧縮（CLI・ライブラリ完全対応）
+- WebP圧縮（CLI・ライブラリ完全対応）
+- **バッチ処理機能（複数ファイル一括圧縮）**
+- **並行処理によるパフォーマンス最適化**
+- **再帰的ディレクトリ処理**
+- **フィルタリング機能（包含・除外パターン）**
+- **圧縮統計表示機能**
 - urfave/cli/v2を使用したCLIインターフェース
 - ライブラリ使用のためのパブリックAPI
 - 圧縮設定用のOptions構造体
+- 画像形式自動検出機能（バイナリシグネチャベース）
 - テストデータ生成ツール
+- 包括的テストスイート（95.8%カバレッジ）
 
 ### 既知の制限事項
-- CLIは現在JPEGファイルのみサポート（`cmd/shuku/compress/compress.go`の87-88行目）
-- PNGコンプレッサーは実装済みだがCLIに統合されていない
-- WebPサポートはまだ実装されていない
-- エラーメッセージが日本語と英語が混在
+- 一部パッケージのテストカバレッジが不足（cmd/shuku: 0%, version: 0%）
 
 ### 新しい画像形式サポートの追加方法
 1. `Compressor`インターフェースを実装する`internal/compressor/<format>_compressor.go`を作成
 2. `pkg/shuku/shuku.go`のinit()関数でコンプレッサーを登録
 3. `detectImageFormat()`関数に形式検出ロジックを追加
-4. `cmd/shuku/compress/compress.go`のCLI検証を更新
+4. `cmd/shuku/compress/compress.go`のsupportedFormats配列に拡張子を追加
 
 ## コードスタイルガイドライン
 
@@ -105,7 +118,7 @@ go test -vet=all ./...
 - エクスポートされた関数と型にはドキュメントコメントが必須
 - 拡張性のためインターフェースベース設計を使用
 - 外部依存関係を最小化（現在はurfave/cli/v2のみ）
-- 一貫性のためエラーメッセージは英語で統一
+- エラーメッセージは日本語で統一済み
 - 包括的カバレッジのためテーブル駆動テストを使用
 
 ## テスト戦略

@@ -8,3 +8,4 @@ shuku.exe
 test_output.*
 testdata/dummy.*
 testdata/*_compressed.*
+testdata/test_compressed*
