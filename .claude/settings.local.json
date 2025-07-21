@@ -7,7 +7,8 @@
       "Bash(go build:*)",
       "Bash(./cmd/shuku/shuku:*)",
       "Bash(gofmt:*)",
-      "Bash(go vet:*)"
+      "Bash(go vet:*)",
+      "Bash(go tool cover:*)"
     ],
     "deny": []
   }
