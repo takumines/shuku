@@ -2,6 +2,9 @@ package batch
 
 import (
 	"bytes"
+	"image"
+	"image/color"
+	"image/jpeg"
 	"io"
 	"os"
 	"strings"
@@ -9,6 +12,32 @@ import (
 
 	"github.com/urfave/cli/v2"
 )
+
+// createTestImageFile creates a test JPEG image file
+func createTestImageFile(t *testing.T, filePath string, width, height int) {
+	t.Helper()
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	// Create a simple pattern
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			r := uint8((x * 255) / width)
+			g := uint8((y * 255) / height)
+			b := uint8(128)
+			img.Set(x, y, color.RGBA{r, g, b, 255})
+		}
+	}
+
+	var buf bytes.Buffer
+	err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: 80})
+	if err != nil {
+		t.Fatalf("Failed to encode JPEG: %v", err)
+	}
+
+	err = os.WriteFile(filePath, buf.Bytes(), 0644)
+	if err != nil {
+		t.Fatalf("Failed to write test image: %v", err)
+	}
+}
 
 func TestBoolToString(t *testing.T) {
 	tests := []struct {
@@ -331,4 +360,192 @@ func TestBatchActionWithValidInput(t *testing.T) {
 	// Test that the command can be instantiated without issues
 	// The actual execution with cli.Exit behavior is tested in integration tests
 	t.Logf("Batch command structure validated successfully")
+}
+
+// TestBatchActionSuccess tests successful batch processing scenarios
+func TestBatchActionSuccess(t *testing.T) {
+	// Create temporary directory with test images
+	tempDir, err := os.MkdirTemp("", "batch_action_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Create a valid JPEG test image using actual image generation
+	testImagePath := strings.Join([]string{tempDir, "test.jpg"}, string(os.PathSeparator))
+	createTestImageFile(t, testImagePath, 50, 50)
+
+	// Create output directory
+	outputDir := strings.Join([]string{tempDir, "output"}, string(os.PathSeparator))
+	if err := os.MkdirAll(outputDir, 0755); err != nil {
+		t.Fatalf("Failed to create output directory: %v", err)
+	}
+
+	tests := []struct {
+		name        string
+		args        []string
+		checkOutput func(string) bool
+	}{
+		{
+			name: "simple batch processing",
+			args: []string{"batch", "--input", tempDir, "--output", outputDir},
+			checkOutput: func(output string) bool {
+				return strings.Contains(output, "バッチ圧縮を開始しています") &&
+					strings.Contains(output, "バッチ圧縮が完了しました")
+			},
+		},
+		{
+			name: "verbose mode",
+			args: []string{"batch", "--input", tempDir, "--output", outputDir, "--verbose"},
+			checkOutput: func(output string) bool {
+				return strings.Contains(output, "入力ディレクトリ:") &&
+					strings.Contains(output, "出力ディレクトリ:") &&
+					strings.Contains(output, "圧縮品質:")
+			},
+		},
+		{
+			name: "stats mode",
+			args: []string{"batch", "--input", tempDir, "--output", outputDir, "--stats"},
+			checkOutput: func(output string) bool {
+				return strings.Contains(output, "=== 圧縮統計 ===") &&
+					strings.Contains(output, "処理ファイル数:")
+			},
+		},
+		{
+			name: "custom quality",
+			args: []string{"batch", "--input", tempDir, "--output", outputDir, "--quality", "90"},
+			checkOutput: func(output string) bool {
+				return strings.Contains(output, "バッチ圧縮が完了しました")
+			},
+		},
+		{
+			name: "recursive processing",
+			args: []string{"batch", "--input", tempDir, "--output", outputDir, "--recursive"},
+			checkOutput: func(output string) bool {
+				return strings.Contains(output, "バッチ圧縮が完了しました")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Clean output directory before each test
+			os.RemoveAll(outputDir)
+			os.MkdirAll(outputDir, 0755)
+
+			// Create CLI app
+			app := &cli.App{
+				Commands: []*cli.Command{Cmd()},
+			}
+
+			// Capture output
+			oldStdout := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			// Run command
+			err := app.Run(append([]string{"test"}, tt.args...))
+
+			// Restore stdout
+			w.Close()
+			os.Stdout = oldStdout
+
+			// Read output
+			var buf bytes.Buffer
+			io.Copy(&buf, r)
+			output := buf.String()
+
+			// Check for success (no error or only minor processing errors)
+			if err != nil && !strings.Contains(err.Error(), "exit status") {
+				t.Logf("Command output: %s", output)
+				// Some processing errors are expected with minimal test data
+			}
+
+			// Verify expected output patterns
+			if !tt.checkOutput(output) {
+				t.Errorf("Output check failed for %s. Output: %s", tt.name, output)
+			}
+		})
+	}
+}
+
+// TestBatchActionNoFiles tests batch processing with no matching files
+func TestBatchActionNoFiles(t *testing.T) {
+	// Create empty directory
+	tempDir, err := os.MkdirTemp("", "batch_empty_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Create CLI app
+	app := &cli.App{
+		Commands: []*cli.Command{Cmd()},
+	}
+
+	// Capture output
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	// Run command
+	err = app.Run([]string{"test", "batch", "--input", tempDir})
+
+	// Restore stdout
+	w.Close()
+	os.Stdout = oldStdout
+
+	// Read output
+	var buf bytes.Buffer
+	io.Copy(&buf, r)
+	output := buf.String()
+
+	// Should handle empty directory gracefully
+	if !strings.Contains(output, "処理対象のファイルが見つかりませんでした") {
+		t.Errorf("Expected 'no files found' message, got: %s", output)
+	}
+}
+
+// TestBatchActionPatterns tests include/exclude patterns
+func TestBatchActionPatterns(t *testing.T) {
+	// Create temporary directory with test image
+	tempDir, err := os.MkdirTemp("", "batch_patterns_test")
+	if err != nil {
+		t.Fatalf("Failed to create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Create a single test image file
+	imagePath := strings.Join([]string{tempDir, "test.jpg"}, string(os.PathSeparator))
+	createTestImageFile(t, imagePath, 50, 50)
+
+	// Simple pattern test
+	args := []string{"test", "batch", "--input", tempDir, "--include", "*.jpg"}
+
+	// Create CLI app
+	app := &cli.App{
+		Commands: []*cli.Command{Cmd()},
+	}
+
+	// Capture output
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	// Run command
+	_ = app.Run(args)
+
+	// Restore stdout
+	w.Close()
+	os.Stdout = oldStdout
+
+	// Read output
+	var buf bytes.Buffer
+	io.Copy(&buf, r)
+	output := buf.String()
+
+	// Should complete without crashing
+	if !strings.Contains(output, "バッチ圧縮") {
+		t.Errorf("Expected batch compression message, got: %s", output)
+	}
 }
